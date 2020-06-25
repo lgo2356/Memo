@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_create_memo"
+        android:title="@string/kor_create_memo"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_edit_memo_list"
+        android:title="@string/kor_edit"
+        app:showAsAction="never"/>
+</menu>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="colorMemoBackground">#FFF2AB</color>
+    <color name="colorMemoContent">#FFF7D1</color>
+    <color name="colorLightGray">#F2F2F2</color>
+    <color name="colorSoftGray">#C3C3C3</color>
+    <color name="colorCursor">#FFB65B</color>
+</resources>

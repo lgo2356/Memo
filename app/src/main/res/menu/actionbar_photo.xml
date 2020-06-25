@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_photo_edit"
+        android:title="@string/kor_edit_memo"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_photo_delete"
+        android:title="@string/kor_delete_memo"
+        android:icon="@drawable/baseline_delete_black_18dp"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
+</menu>
