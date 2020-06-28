@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.memo.adapter.MemoRecyclerAdapter
 import com.example.memo.dto.Memo
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(app_toolbar)
 
         checkPermissions()
 
@@ -60,6 +62,7 @@ class MainActivity : AppCompatActivity() {
                         checkedMemo?.deleteFromRealm()
                     }
                 }
+                memoAdapter
             }
         }
     }

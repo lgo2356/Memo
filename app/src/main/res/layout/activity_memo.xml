@@ -3,8 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f2f2f2"
-    android:padding="6dp">
+    android:background="#f2f2f2">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/app_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/edit_title"
@@ -15,19 +21,23 @@
         android:hint="@string/kor_title"
         android:importantForAutofill="no"
         android:inputType="none"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
         android:textSize="30sp"
         android:textStyle="bold"
         android:theme="@style/EditTheme"
         app:layout_constraintBottom_toTopOf="@id/scrollView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/app_toolbar" />
 
     <HorizontalScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
         app:layout_constraintBottom_toTopOf="@id/edit_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -49,6 +59,8 @@
         android:hint="@string/kor_content"
         android:importantForAutofill="no"
         android:inputType="none"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
         android:textSize="16sp"
         android:theme="@style/EditTheme"
         app:layout_constraintLeft_toLeftOf="parent"

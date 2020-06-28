@@ -36,17 +36,21 @@ class MemoRecyclerAdapter : RecyclerView.Adapter<MemoRecyclerAdapter.ViewHolder>
 
         holder.title.text = item.title
         holder.content.text = item.content
+        holder.chkBox.isChecked = false
 
         holder.chkBox.setOnCheckedChangeListener { _, _ ->
             if (holder.chkBox.isChecked) {
                 checkedMemoPositions.add(position)
+            } else {
+                checkedMemoPositions.remove(position)
             }
         }
+
         holder.itemView.setOnClickListener { clickListener?.onItemClick(it, position) }
     }
 
     // Return checked memo positions
-    fun getCheckedMemoPositions(): MutableSet<Int> {
+    fun getCheckedMemoPositions(): Set<Int> {
         return checkedMemoPositions
     }
 

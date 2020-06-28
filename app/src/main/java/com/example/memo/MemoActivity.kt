@@ -31,7 +31,9 @@ import com.example.memo.dto.Memo
 import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.kotlin.where
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_memo.*
+import kotlinx.android.synthetic.main.activity_memo.app_toolbar
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ class MemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_memo)
+        setSupportActionBar(app_toolbar)
 
         requestCode = intent.getIntExtra("reqCode", Constants.INVALID_CODE)
 
@@ -130,8 +133,20 @@ class MemoActivity : AppCompatActivity() {
 
                         Realm.getDefaultInstance().use {
                             it.executeTransaction { realm ->
-                                id = realm.where(Memo::class.java).max("id") as Long + 1
-                                position = realm.where(Memo::class.java).max("position")?.toInt()!! + 1
+                                val maxResult = realm.where(Memo::class.java).max("id")
+                                val positionResult = realm.where(Memo::class.java).max("position")
+
+                                if (maxResult != null) {
+                                    id = maxResult as Long + 1
+                                } else {
+                                    id = 0
+                                }
+
+                                if (positionResult != null) {
+                                    position = positionResult.toInt() + 1
+                                } else {
+                                    position = 0
+                                }
                             }
                         }
 
@@ -202,16 +217,6 @@ class MemoActivity : AppCompatActivity() {
 //    @Override
 //    public boolean onOptionsItemSelected(MenuItem item) {
 //        switch(item.getItemId()) {
-//            case R . id . action_delete_memo :
-//                return true;
-//            case R . id . action_edit_memo :
-//                editTitle.requestFocus();
-//                return true;
-//            case R . id . action_save_memo :
-//                editTitle.clearFocus();
-//                editContent.clearFocus();
-//                saveMemo();
-//                return true;
 //            case R . id . action_insert_photo :
 //                checkPermission();
 //
