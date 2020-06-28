@@ -1,70 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="6dp"
-    android:background="#f2f2f2">
+    android:background="#f2f2f2"
+    android:padding="6dp">
+
     <EditText
-        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/edit_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:background="@null"
+        android:hint="@string/kor_title"
+        android:importantForAutofill="no"
+        android:inputType="none"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:theme="@style/EditTheme"
         app:layout_constraintBottom_toTopOf="@id/scrollView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/edit_title"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="10dp"
-        android:hint="@string/kor_title"
-        android:background="@null"
-        android:theme="@style/EditTheme"/>
     <HorizontalScrollView
-        app:layout_constraintTop_toBottomOf="@id/edit_title"
-        app:layout_constraintBottom_toTopOf="@id/edit_content"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clipToPadding="false">
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:id="@+id/layout_photo_area">
-        </LinearLayout>
-    </HorizontalScrollView>
-    <EditText
-        app:layout_constraintTop_toBottomOf="@id/scrollView"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toTopOf="@id/edit_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_title">
 
+        <LinearLayout
+            android:id="@+id/layout_photo_area"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"></LinearLayout>
+
+    </HorizontalScrollView>
+
+    <EditText
+        android:id="@+id/edit_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/edit_content"
-        android:textSize="16sp"
-        android:hint="@string/kor_content"
         android:background="@null"
-        android:theme="@style/EditTheme"/>
-    <LinearLayout
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:hint="@string/kor_content"
+        android:importantForAutofill="no"
+        android:inputType="none"
+        android:textSize="16sp"
+        android:theme="@style/EditTheme"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scrollView" />
 
+    <LinearLayout
+        android:id="@+id/edit_navi"
         android:layout_width="match_parent"
         android:layout_height="80dp"
+        android:gravity="center"
         android:orientation="horizontal"
-        android:id="@+id/edit_navi"
-
         android:padding="5dp"
-        android:gravity="center">
+        app:layout_constraintBottom_toBottomOf="parent">
+
         <Button
+            android:id="@+id/delete_photo_button"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:id="@+id/delete_photo_button"
-            android:text="@string/kor_delete"/>
+            android:text="@string/kor_delete" />
+
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PersistableBundle
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -20,46 +21,213 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.*
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.addTextChangedListener
+import com.example.memo.dto.Memo
+import io.realm.Realm
+import io.realm.RealmResults
+import io.realm.kotlin.where
+import kotlinx.android.synthetic.main.activity_memo.*
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import kotlin.math.max
 
-public class MemoActivity extends AppCompatActivity {
-    private EditText editTitle;
-    private EditText editContent;
-    private LinearLayout layoutPhotoArea;
-//    private SquareImageView imageAttaced;
+class MemoActivity : AppCompatActivity() {
 
-    private InputMethodManager inputMethodManager;
+    private var requestCode: Int = -1
 
-    private ArrayList<String> attachedPhotoPathList = new ArrayList<>();  // 첨부된 사진들을 저장할 리스트
-    private ArrayList<PhotoFrameLayout> attachedPhotoList = new ArrayList<>();
-    private int memoListIndex;
-    String tableName = null;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_memo)
+
+        requestCode = intent.getIntExtra("reqCode", Constants.INVALID_CODE)
+
+        when (requestCode) {
+            Constants.REQUEST_CREATE_MEMO -> {
+                Log.d("Mode", "Create")
+            }
+
+            Constants.REQUEST_EDIT_MEMO -> {
+                Log.d("Mode", "Edit")
+
+                val position = intent.getIntExtra("position", Constants.INVALID_POSITION)
+
+                Realm.getDefaultInstance().use {
+                    val memo: Memo? = it
+                            .where(Memo::class.java)
+                            .equalTo("position", position)
+                            .findFirst()
+                    val title: String? = memo?.title
+                    val content: String? = memo?.content
+
+                    if (title == null || title.isEmpty()) edit_title.setText("")
+                    else edit_title.setText(title)
+
+                    if (content == null || content.isEmpty()) edit_content.setText("")
+                    else edit_content.setText(content)
+                }
+            }
+
+            else -> {
+                Log.d("Error", "Invalid code")
+            }
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.actionbar_memo, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        if (edit_title.isFocused || edit_content.isFocused) setActionbarToEditMode(menu)
+        else setActionbarToReadMode(menu)
+        return true
+    }
+
+    private fun setActionbarToEditMode(menu: Menu?) {
+        menu?.let {
+            it.findItem(R.id.action_edit_memo).isVisible = false
+            it.findItem(R.id.action_delete_memo).isVisible = false
+            it.findItem(R.id.action_save_memo).isVisible = true
+            it.findItem(R.id.action_insert_photo).isVisible = true
+            it.findItem(R.id.action_edit_photo).isVisible = true
+        }
+    }
+
+    private fun setActionbarToReadMode(menu: Menu?) {
+        menu?.let {
+            it.findItem(R.id.action_edit_memo).isVisible = true
+            it.findItem(R.id.action_delete_memo).isVisible = true
+            it.findItem(R.id.action_save_memo).isVisible = false
+            it.findItem(R.id.action_insert_photo).isVisible = false
+            it.findItem(R.id.action_edit_photo).isVisible = false
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_delete_memo -> {
+                return true
+            }
+
+            R.id.action_edit_memo -> {
+                edit_title.requestFocus()
+                return true
+            }
+
+            R.id.action_save_memo -> {
+                when (requestCode) {
+                    Constants.REQUEST_CREATE_MEMO -> {
+                        var id: Long = -1
+                        var position: Int = Constants.INVALID_POSITION
+
+                        Realm.getDefaultInstance().use {
+                            it.executeTransaction { realm ->
+                                id = realm.where(Memo::class.java).max("id") as Long + 1
+                                position = realm.where(Memo::class.java).max("position")?.toInt()!! + 1
+                            }
+                        }
+
+                        val memo = Memo()
+                        memo.id = id
+                        memo.title = edit_title.text.toString()
+                        memo.content = edit_content.text.toString()
+                        memo.imageAddress
+                        memo.position = position
+
+                        saveMemo(memo)
+                    }
+
+                    Constants.REQUEST_EDIT_MEMO -> {
+                        val position = intent.getIntExtra("position", Constants.INVALID_POSITION)
+                        var memo: Memo? = null
+
+                        Realm.getDefaultInstance().use {
+                            it.executeTransaction { realm ->
+                                memo = realm.where(Memo::class.java)
+                                        .equalTo("position", position)
+                                        .findFirst()?.apply {
+                                            this.title = edit_title.text.toString()
+                                            this.content = edit_content.text.toString()
+                                            this.imageAddress
+                                            this.position = position
+                                        }
+                            }
+                        }
+                        saveMemo(memo)
+                    }
+
+                    else -> {
+
+                    }
+                }
+
+                edit_title.clearFocus()
+                edit_content.clearFocus()
+                return true
+            }
+
+            R.id.action_insert_photo -> {
+                return true
+            }
+
+            else -> {
+                return super.onOptionsItemSelected(item)
+            }
+        }
+    }
+
+    private fun saveMemo(memo: Memo?) {
+        if (memo != null) {
+            Realm.getDefaultInstance().use { realm ->
+                realm.executeTransaction {
+                    realm.copyToRealm(memo)
+                }
+            }
+        } else {
+            Toast.makeText(this, "메모장 저장에 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
+
+        this.finish()
+    }
+}
 
 //    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_memo);
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch(item.getItemId()) {
+//            case R . id . action_delete_memo :
+//                return true;
+//            case R . id . action_edit_memo :
+//                editTitle.requestFocus();
+//                return true;
+//            case R . id . action_save_memo :
+//                editTitle.clearFocus();
+//                editContent.clearFocus();
+//                saveMemo();
+//                return true;
+//            case R . id . action_insert_photo :
+//                checkPermission();
 //
+//                Intent intent = new Intent(Intent.ACTION_PICK);
+//                intent.setType("image/*");
+//                intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+//                startActivityForResult(intent, RequestCodes.ACTIVITY_REQUEST_CODE_PHOTO_INSERT);
+//                return true;
+//                case R . id . action_edit_photo :
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
+
 //        getSupportActionBar().setElevation(0);
-//
-//        /* DB 구현 중 */
-//        memoDB = new MemoDatabase(this);
-//        memoListIndex = getIntent().getIntExtra("index", -1);
-//        tableName = "ATTACHED_IMAGE_TABLE_" + memoListIndex;
-//        memoDB.createAttachedImageTable(tableName);
 //
 //        inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 //
@@ -166,69 +334,6 @@ public class MemoActivity extends AppCompatActivity {
 //        });
 //    }
 //
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.actionbar_memo, menu);
-//
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onPrepareOptionsMenu(Menu menu) {
-//        if(editTitle.isFocused() || editContent.isFocused()) {
-//            menu.findItem(R.id.action_edit_memo).setVisible(false);
-//            menu.findItem(R.id.action_delete_memo).setVisible(false);
-//            menu.findItem(R.id.action_save_memo).setVisible(true);
-//            menu.findItem(R.id.action_insert_photo).setVisible(true);
-//            menu.findItem(R.id.action_edit_photo).setVisible(true);
-//
-//            /* 이미지 체크박스 설정 */
-//            for(PhotoFrameLayout photo : attachedPhotoList) {
-//                photo.setCheckBoxVisibility(true);
-//            }
-//        }
-//        else {
-//            menu.findItem(R.id.action_edit_memo).setVisible(true);
-//            menu.findItem(R.id.action_delete_memo).setVisible(true);
-//            menu.findItem(R.id.action_save_memo).setVisible(false);
-//            menu.findItem(R.id.action_insert_photo).setVisible(false);
-//            menu.findItem(R.id.action_edit_photo).setVisible(false);
-//
-//            /* 이미지 설정 */
-//            for(PhotoFrameLayout photo : attachedPhotoList) {
-//                photo.setCheckBoxVisibility(false);
-//            }
-//        }
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.action_delete_memo:
-//                return true;
-//            case R.id.action_edit_memo:
-//                editTitle.requestFocus();
-//                return true;
-//            case R.id.action_save_memo:
-//                editTitle.clearFocus();
-//                editContent.clearFocus();
-//                saveMemo();
-//                return true;
-//            case R.id.action_insert_photo:
-//                checkPermission();
-//
-//                Intent intent = new Intent(Intent.ACTION_PICK);
-//                intent.setType("image/*");
-//                intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
-//                startActivityForResult(intent, RequestCodes.ACTIVITY_REQUEST_CODE_PHOTO_INSERT);
-//                return true;
-//            case R.id.action_edit_photo:
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
 //
 //    @Override
 //    public void onBackPressed() {
@@ -278,17 +383,6 @@ public class MemoActivity extends AppCompatActivity {
 //        setResult(Activity.RESULT_OK, intent);
 //    }
 //
-//    private void checkPermission() {
-//        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-//            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
-//                ActivityCompat.requestPermissions(
-//                        this,
-//                        new String[]{Manifest.permission.CAMERA},
-//                        RequestCodes.PERMISSION_REQUEST_CODE_CAMERA
-//                );
-//            }
-//        }
-//    }
 //
 //    @Override
 //    protected void onActivityResult(int reqCode, int resCode, Intent data) {
@@ -357,4 +451,3 @@ public class MemoActivity extends AppCompatActivity {
 //    private LinearLayout.LayoutParams photoLayoutParams() {
 //        return new LinearLayout.LayoutParams(400, 400);
 //    }
-}

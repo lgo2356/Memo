@@ -9,6 +9,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -33,12 +34,15 @@ class MainActivity : AppCompatActivity() {
         recycler_memo.adapter = memoAdapter
         recycler_memo.layoutManager = LinearLayoutManager(this)  // Default vertical
 
+        memoAdapter.items = memoRealm.where(Memo::class.java).findAll()
         memoRealm.addChangeListener { memoAdapter.notifyDataSetChanged() }
 
         memoAdapter.setOnItemClickListener(object : MemoRecyclerAdapter.OnItemClickListener {
             override fun onItemClick(view: View, position: Int) {
                 if (!editMode) {
                     val intent = Intent(this@MainActivity, MemoActivity::class.java)
+                    intent.putExtra("reqCode", Constants.REQUEST_EDIT_MEMO)
+                    intent.putExtra("position", position)
                     startActivity(intent)
                 }
             }
@@ -118,6 +122,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        memoRealm?.close()
     }
 
 //    override fun onActivityResult(int reqCode, int resCode, Intent data) {
