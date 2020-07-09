@@ -1,43 +1,17 @@
 package com.example.memo;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.*
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.widget.addTextChangedListener
 import com.example.memo.dto.Memo
 import io.realm.Realm
-import io.realm.RealmResults
-import io.realm.kotlin.where
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_memo.*
 import kotlinx.android.synthetic.main.activity_memo.app_toolbar
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import kotlin.math.max
 
 class MemoActivity : AppCompatActivity() {
@@ -128,34 +102,13 @@ class MemoActivity : AppCompatActivity() {
             R.id.action_save_memo -> {
                 when (requestCode) {
                     Constants.REQUEST_CREATE_MEMO -> {
-                        var id: Long = -1
-                        var position: Int = Constants.INVALID_POSITION
-
-                        Realm.getDefaultInstance().use {
-                            it.executeTransaction { realm ->
-                                val maxResult = realm.where(Memo::class.java).max("id")
-                                val positionResult = realm.where(Memo::class.java).max("position")
-
-                                if (maxResult != null) {
-                                    id = maxResult as Long + 1
-                                } else {
-                                    id = 0
-                                }
-
-                                if (positionResult != null) {
-                                    position = positionResult.toInt() + 1
-                                } else {
-                                    position = 0
-                                }
-                            }
-                        }
-
                         val memo = Memo()
-                        memo.id = id
+
+                        memo.id = getValidId()
                         memo.title = edit_title.text.toString()
                         memo.content = edit_content.text.toString()
                         memo.imageAddress
-                        memo.position = position
+                        memo.position = getValidPosition()
 
                         saveMemo(memo)
                     }
@@ -166,7 +119,8 @@ class MemoActivity : AppCompatActivity() {
 
                         Realm.getDefaultInstance().use {
                             it.executeTransaction { realm ->
-                                memo = realm.where(Memo::class.java)
+                                memo = realm
+                                        .where(Memo::class.java)
                                         .equalTo("position", position)
                                         .findFirst()?.apply {
                                             this.title = edit_title.text.toString()
@@ -196,6 +150,20 @@ class MemoActivity : AppCompatActivity() {
             else -> {
                 return super.onOptionsItemSelected(item)
             }
+        }
+    }
+
+    private fun getValidId(): Long {
+        Realm.getDefaultInstance().use {
+            val maxId = it.where(Memo::class.java).max("id")
+            return maxId?.toLong()?.plus(1) ?: 0
+        }
+    }
+
+    private fun getValidPosition(): Int {
+        Realm.getDefaultInstance().use {
+            val maxPosition = it.where(Memo::class.java).max("position")
+            return maxPosition?.toInt()?.plus(1) ?: 0
         }
     }
 
@@ -231,43 +199,6 @@ class MemoActivity : AppCompatActivity() {
 //                return super.onOptionsItemSelected(item);
 //        }
 //    }
-
-//        getSupportActionBar().setElevation(0);
-//
-//        inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-//
-//        editTitle = (EditText) findViewById(R.id.edit_title);
-//        editContent = (EditText) findViewById(R.id.edit_content);
-//        layoutPhotoArea = (LinearLayout) findViewById(R.id.layout_photo_area);
-//
-//        editTitle.requestFocus();
-//        showKeyboard(editTitle, true);  // View, 키보드 상태 (올리기: true / 내리기: false)
-//
-//        editTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            public void onFocusChange(View view, boolean hasFocus) {
-//                invalidateOptionsMenu();
-//
-//                if(hasFocus) {
-//                    showKeyboard(view, true);
-//                }
-//                else {
-//                    showKeyboard(view, false);
-//                }
-//            }
-//        });
-//
-//        editContent.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            public void onFocusChange(View view, boolean hasFocus) {
-//                invalidateOptionsMenu();
-//
-//                if(hasFocus) {
-//                    showKeyboard(view, true);
-//                }
-//                else {
-//                    showKeyboard(view, false);
-//                }
-//            }
-//        });
 //
 //        /* from memo list onClickItem */
 //        if(getIntent().getIntExtra("reqCode", -2) == RequestCodes.ACTIVITY_REQUEST_CODE_MEMO_EDIT) {
@@ -319,26 +250,6 @@ class MemoActivity : AppCompatActivity() {
 //            editContent.setText(content);
 //        }
 //
-//        Button deletePhotoButton = (Button) findViewById(R.id.delete_photo_button);
-//        deletePhotoButton.setOnClickListener(view -> {
-//            ArrayList<Integer> deleteIndex = new ArrayList<>();
-//
-//            for(int i=layoutPhotoArea.getChildCount()-1; i>=0; i--) {
-//                if(attachedPhotoList.get(i).isCheckBoxChecked()) {
-//                    deleteIndex.add(i);
-//                    layoutPhotoArea.removeView(attachedPhotoList.get(i));
-//                    memoDB.deleteImage(tableName, i);
-//                }
-//            }
-//
-//            /* DB 재정렬 */
-//            Collections.sort(deleteIndex);
-//            for(int i=0; i<layoutPhotoArea.getChildCount(); i++) {
-//                memoDB.updateImageIndex(tableName, deleteIndex.get(i), i);
-//            }
-//        });
-//    }
-//
 //
 //    @Override
 //    public void onBackPressed() {
@@ -364,30 +275,6 @@ class MemoActivity : AppCompatActivity() {
 //            }
 //        }, 30);
 //    }
-//
-//    public void saveMemo() {
-//        Intent intent = new Intent();
-//        intent.putExtra("index", memoListIndex);
-//
-//        /* 썸네일 저장 */
-//        if(attachedPhotoList.size() > 0) {
-//            intent.putExtra("thumbnail", attachedPhotoPathList.get(0));  // 첨부된 사진 중 첫 번째를 썸네일로 지정
-//        }
-//        else {
-//            intent.putExtra("thumbnail", "");
-//        }
-//
-//        /* 제목 저장 */
-//        if(!editTitle.getText().toString().equals("")) { intent.putExtra("title", editTitle.getText().toString()); }
-//        else { intent.putExtra("title", ""); }
-//
-//        /* 내용 저장 */
-//        if(!editContent.getText().toString().equals("")) { intent.putExtra("content", editContent.getText().toString()); }
-//        else { intent.putExtra("content", ""); }
-//
-//        setResult(Activity.RESULT_OK, intent);
-//    }
-//
 //
 //    @Override
 //    protected void onActivityResult(int reqCode, int resCode, Intent data) {

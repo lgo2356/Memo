@@ -131,6 +131,7 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         memoRealm?.close()
     }
+}
 
 //    override fun onActivityResult(int reqCode, int resCode, Intent data) {
 //        switch(reqCode) {
@@ -192,4 +193,3 @@ class MainActivity : AppCompatActivity() {
 //            break;
 //        }
 //    }
-}
